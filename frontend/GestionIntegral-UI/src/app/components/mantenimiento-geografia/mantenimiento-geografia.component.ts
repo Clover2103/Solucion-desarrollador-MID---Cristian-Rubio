@@ -1,27 +1,27 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Importante para el input
+import { FormsModule } from '@angular/forms';
 import { GeografiaService } from '../../services/geografia.service';
 import { Pais, Departamento, Ciudad } from '../../models/geografia.model';
 
 @Component({
   selector: 'app-mantenimiento-geografia',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Añadido FormsModule
+  imports: [CommonModule, FormsModule],
   templateUrl: './mantenimiento-geografia.component.html',
   styleUrl: './mantenimiento-geografia.component.scss'
 })
 export class MantenimientoGeografiaComponent implements OnInit {
   private geoService = inject(GeografiaService);
+  private cdr = inject(ChangeDetectorRef);
 
   paises: Pais[] = [];
   departamentos: Departamento[] = [];
   ciudades: Ciudad[] = [];
 
-  paisSeleccionado: any = null;
-  deptoSeleccionado: any = null;
+  paisSeleccionado?: Pais;
+  deptoSeleccionado?: Departamento;
 
-  // Variables para el Modal Moderno
   nombreNuevo: string = '';
   tipoNuevo: 'Pais' | 'Departamento' | 'Ciudad' = 'Pais';
   mostrarModal: boolean = false;
@@ -30,61 +30,85 @@ export class MantenimientoGeografiaComponent implements OnInit {
     this.cargarPaises();
   }
 
-  // --- LÓGICA DE MODAL ---
-  abrirModal(tipo: 'Pais' | 'Departamento' | 'Ciudad') {
-    this.tipoNuevo = tipo;
-    this.nombreNuevo = '';
-    this.mostrarModal = true;
+  // Punto 4: Formato "Nombre De Ejemplo"
+  formatearTexto(texto: string): string {
+    if (!texto) return '';
+    return texto.toLowerCase().split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
-  cerrarModal() {
-    this.mostrarModal = false;
-  }
-
-  guardar() {
-    if (!this.nombreNuevo.trim()) return;
-
-    if (this.tipoNuevo === 'Pais') {
-      this.geoService.crearPais(this.nombreNuevo).subscribe(() => {
-        this.cargarPaises();
-        this.cerrarModal();
-      });
-    } else if (this.tipoNuevo === 'Departamento' && this.paisSeleccionado) {
-      this.geoService.crearDepto(this.nombreNuevo, this.paisSeleccionado.paisId).subscribe(() => {
-        this.seleccionarPais(this.paisSeleccionado);
-        this.cerrarModal();
-      });
-    } else if (this.tipoNuevo === 'Ciudad' && this.deptoSeleccionado) {
-      this.geoService.crearCiudad(this.nombreNuevo, this.deptoSeleccionado.departamentoId).subscribe(() => {
-        this.seleccionarDepto(this.deptoSeleccionado);
-        this.cerrarModal();
-      });
-    }
-  }
-
-  // --- CARGA Y SELECCIÓN ---
   cargarPaises() {
-    this.geoService.getPaises().subscribe(res => this.paises = res);
+    this.geoService.getPaises().subscribe({
+      next: (res) => {
+        this.paises = [...res];
+        this.cdr.detectChanges(); // Fuerza el renderizado inmediato
+      },
+      error: (err) => console.error('Error al cargar países', err)
+    });
   }
 
   seleccionarPais(pais: Pais) {
     this.paisSeleccionado = pais;
-    this.deptoSeleccionado = null;
+    this.deptoSeleccionado = undefined;
+    this.departamentos = [];
     this.ciudades = [];
-    this.geoService.getDeptosPorPais(pais.paisId).subscribe(res => this.departamentos = res);
+
+    this.geoService.getDeptosPorPais(pais.paisId).subscribe(res => {
+      this.departamentos = [...res];
+      this.cdr.detectChanges();
+    });
   }
 
   seleccionarDepto(depto: Departamento) {
     this.deptoSeleccionado = depto;
-    this.geoService.getCiudadesPorDepto(depto.departamentoId).subscribe(res => this.ciudades = res);
+    this.ciudades = [];
+
+    this.geoService.getCiudadesPorDepto(depto.departamentoId).subscribe(res => {
+      this.ciudades = [...res];
+      this.cdr.detectChanges();
+    });
   }
 
-  // --- BORRADO ---
+  guardar() {
+    const nombreLimpio = this.formatearTexto(this.nombreNuevo.trim());
+    if (!nombreLimpio) return;
+
+    const postObserver = {
+      next: () => {
+        this.cerrarModal();
+        if (this.tipoNuevo === 'Pais') this.cargarPaises();
+        else if (this.tipoNuevo === 'Departamento') this.seleccionarPais(this.paisSeleccionado!);
+        else if (this.tipoNuevo === 'Ciudad') this.seleccionarDepto(this.deptoSeleccionado!);
+      }
+    };
+
+    if (this.tipoNuevo === 'Pais') {
+      this.geoService.crearPais(nombreLimpio).subscribe(postObserver);
+    } else if (this.tipoNuevo === 'Departamento' && this.paisSeleccionado) {
+      this.geoService.crearDepto(nombreLimpio, this.paisSeleccionado.paisId).subscribe(postObserver);
+    } else if (this.tipoNuevo === 'Ciudad' && this.deptoSeleccionado) {
+      this.geoService.crearCiudad(nombreLimpio, this.deptoSeleccionado.departamentoId).subscribe(postObserver);
+    }
+  }
+
+  abrirModal(tipo: 'Pais' | 'Departamento' | 'Ciudad') {
+    this.tipoNuevo = tipo;
+    this.nombreNuevo = '';
+    this.mostrarModal = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.cdr.detectChanges();
+  }
+
   borrarPais(id: number) {
-    if (confirm('¿Eliminar país y todo su contenido?')) {
+    if (confirm('¿Eliminar país?')) {
       this.geoService.borrarPais(id).subscribe(() => {
         this.cargarPaises();
-        this.paisSeleccionado = null;
+        this.paisSeleccionado = undefined;
         this.departamentos = [];
       });
     }
@@ -93,7 +117,7 @@ export class MantenimientoGeografiaComponent implements OnInit {
   borrarDepto(id: number) {
     if (confirm('¿Eliminar departamento?')) {
       this.geoService.borrarDepto(id).subscribe(() => {
-        this.seleccionarPais(this.paisSeleccionado);
+        if (this.paisSeleccionado) this.seleccionarPais(this.paisSeleccionado);
       });
     }
   }
@@ -101,7 +125,7 @@ export class MantenimientoGeografiaComponent implements OnInit {
   borrarCiudad(id: number) {
     if (confirm('¿Eliminar ciudad?')) {
       this.geoService.borrarCiudad(id).subscribe(() => {
-        this.seleccionarDepto(this.deptoSeleccionado);
+        if (this.deptoSeleccionado) this.seleccionarDepto(this.deptoSeleccionado);
       });
     }
   }
