@@ -15,5 +15,24 @@ namespace GestionIntegral.API.Data
         public DbSet<Pais> Paises { get; set; }
         public DbSet<Departamento> Departamentos { get; set; }
         public DbSet<Ciudad> Ciudades { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configuración de Cascada: Departamento -> Ciudad
+            modelBuilder.Entity<Departamento>()
+                .HasMany(d => d.Ciudades)
+                .WithOne(c => c.Departamento)
+                .HasForeignKey(c => c.DepartamentoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configuración de Cascada: Pais -> Departamento
+            modelBuilder.Entity<Pais>()
+                .HasMany(p => p.Departamentos)
+                .WithOne(d => d.Pais)
+                .HasForeignKey(d => d.PaisId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }

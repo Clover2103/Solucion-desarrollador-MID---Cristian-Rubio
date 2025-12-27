@@ -1,25 +1,19 @@
 <div class="container-fluid py-4 bg-light min-vh-100">
   <div class="row g-4">
-
     <div class="col-md-4">
       <div class="card shadow border-0 h-100">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-          <h6 class="mb-0 fw-bold text-uppercase">1. Países</h6>
-          <button class="btn btn-sm btn-light rounded-circle shadow-sm" (click)="abrirModal('Pais')"><b>+</b></button>
+          <h6 class="mb-0 fw-bold">1. PAÍSES</h6>
+          <button class="btn btn-sm btn-light rounded-circle shadow-sm fw-bold" (click)="abrirModal('Pais')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
           <div *ngFor="let p of paises" class="d-flex border-bottom align-items-stretch">
             <button type="button" (click)="seleccionarPais(p)"
                     class="btn btn-flat text-start flex-grow-1 p-3 border-0 rounded-0"
-                    [class.bg-info-subtle]="paisSeleccionado?.paisId === p.paisId"
-                    [class.fw-bold]="paisSeleccionado?.paisId === p.paisId">
+                    [class.bg-primary-subtle]="paisSeleccionado?.paisId === p.paisId">
               {{ p.nombre }}
             </button>
-            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarPais(p.paisId)">×</button>
-          </div>
-          <div *ngIf="paises.length === 0" class="p-5 text-center text-muted">
-            <div class="spinner-border spinner-border-sm text-primary mb-2"></div><br>
-            <span class="small">Sincronizando con el servidor...</span>
+            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarPais(p)">×</button>
           </div>
         </div>
       </div>
@@ -28,19 +22,17 @@
     <div class="col-md-4">
       <div class="card shadow border-0 h-100">
         <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
-          <h6 class="mb-0 fw-bold text-uppercase">2. Departamentos</h6>
-          <button class="btn btn-sm btn-light rounded-circle shadow-sm" [disabled]="!paisSeleccionado" (click)="abrirModal('Departamento')"><b>+</b></button>
+          <h6 class="mb-0 fw-bold">2. DEPARTAMENTOS</h6>
+          <button class="btn btn-sm btn-light rounded-circle shadow-sm" [disabled]="!paisSeleccionado" (click)="abrirModal('Departamento')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
-          <div *ngIf="!paisSeleccionado" class="p-5 text-center text-muted italic">Seleccione un país...</div>
           <div *ngFor="let d of departamentos" class="d-flex border-bottom align-items-stretch">
             <button type="button" (click)="seleccionarDepto(d)"
                     class="btn btn-flat text-start flex-grow-1 p-3 border-0 rounded-0"
-                    [class.bg-success-subtle]="deptoSeleccionado?.departamentoId === d.departamentoId"
-                    [class.fw-bold]="deptoSeleccionado?.departamentoId === d.departamentoId">
+                    [class.bg-success-subtle]="deptoSeleccionado?.departamentoId === d.departamentoId">
               {{ d.nombre }}
             </button>
-            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarDepto(d.departamentoId)">×</button>
+            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarDepto(d)">×</button>
           </div>
         </div>
       </div>
@@ -49,14 +41,13 @@
     <div class="col-md-4">
       <div class="card shadow border-0 h-100">
         <div class="card-header bg-info text-dark d-flex justify-content-between align-items-center py-3">
-          <h6 class="mb-0 fw-bold text-uppercase">3. Ciudades</h6>
-          <button class="btn btn-sm btn-dark rounded-circle shadow-sm" [disabled]="!deptoSeleccionado" (click)="abrirModal('Ciudad')"><b>+</b></button>
+          <h6 class="mb-0 fw-bold text-uppercase">3. CIUDADES</h6>
+          <button class="btn btn-sm btn-dark rounded-circle shadow-sm" [disabled]="!deptoSeleccionado" (click)="abrirModal('Ciudad')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
-          <div *ngIf="!deptoSeleccionado" class="p-5 text-center text-muted italic">Seleccione un departamento...</div>
           <div *ngFor="let c of ciudades" class="d-flex border-bottom align-items-stretch p-3">
             <span class="flex-grow-1">{{ c.nombre }}</span>
-            <button class="btn btn-link text-danger p-0 border-0" (click)="borrarCiudad(c.ciudadId)">×</button>
+            <button class="btn btn-link text-danger p-0 border-0" (click)="borrarCiudad(c)">×</button>
           </div>
         </div>
       </div>
@@ -64,22 +55,19 @@
   </div>
 </div>
 
-<div class="modal d-block" *ngIf="mostrarModal" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);">
+<div class="modal d-block" *ngIf="mostrarModal" style="background: rgba(0,0,0,0.7);">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header border-0 bg-light">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0 bg-light p-4">
         <h5 class="modal-title fw-bold">Nuevo {{ tipoNuevo }}</h5>
         <button type="button" class="btn-close" (click)="cerrarModal()"></button>
       </div>
-      <div class="modal-body py-4">
-        <input type="text" class="form-control form-control-lg shadow-sm"
-               [(ngModel)]="nombreNuevo"
-               (keyup.enter)="guardar()"
-               placeholder="Nombre del registro..." autofocus>
+      <div class="modal-body p-4">
+        <input type="text" class="form-control form-control-lg border-2" [(ngModel)]="nombreNuevo" (keyup.enter)="guardar()" placeholder="Nombre..." autofocus>
       </div>
-      <div class="modal-footer border-0">
-        <button class="btn btn-light px-4" (click)="cerrarModal()">Cancelar</button>
-        <button class="btn btn-primary px-4 shadow" [disabled]="!nombreNuevo.trim()" (click)="guardar()">Guardar</button>
+      <div class="modal-footer border-0 p-4">
+        <button class="btn btn-light px-4 fw-bold" (click)="cerrarModal()">CANCELAR</button>
+        <button class="btn btn-primary px-5 fw-bold shadow" [disabled]="!nombreNuevo.trim()" (click)="guardar()">GUARDAR</button>
       </div>
     </div>
   </div>
