@@ -1,8 +1,11 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // Importado
 import { GeografiaService } from '../../services/geografia.service';
+import { AuthService } from '../../services/auth.service'; // Importado
 import { Pais, Departamento, Ciudad } from '../../models/geografia.model';
+import Swal from 'sweetalert2'; // Importado
 
 @Component({
   selector: 'app-mantenimiento-geografia',
@@ -13,6 +16,8 @@ import { Pais, Departamento, Ciudad } from '../../models/geografia.model';
 })
 export class MantenimientoGeografiaComponent implements OnInit {
   private geoService = inject(GeografiaService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   paises: Pais[] = [];
@@ -27,14 +32,16 @@ export class MantenimientoGeografiaComponent implements OnInit {
   mostrarModal: boolean = false;
 
   ngOnInit() {
+    // PUNTO 1: Validación de seguridad inmediata
+    if (!this.authService.estaAutenticado()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.cargarPaises();
   }
 
-  formatearTexto(texto: string): string {
-    if (!texto) return '';
-    return texto.toLowerCase().split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  cerrarSesion() {
+    this.authService.logout();
   }
 
   cargarPaises() {
@@ -47,6 +54,7 @@ export class MantenimientoGeografiaComponent implements OnInit {
     });
   }
 
+  // --- MÉTODOS DE SELECCIÓN ---
   seleccionarPais(pais: Pais) {
     this.paisSeleccionado = pais;
     this.deptoSeleccionado = undefined;
@@ -67,13 +75,15 @@ export class MantenimientoGeografiaComponent implements OnInit {
     });
   }
 
+  // --- GUARDADO CON SWAL ---
   guardar() {
-    const nombreLimpio = this.formatearTexto(this.nombreNuevo.trim());
+    const nombreLimpio = this.nombreNuevo.trim();
     if (!nombreLimpio) return;
 
     const postObserver = {
       next: () => {
         this.cerrarModal();
+        Swal.fire('Guardado', `${this.tipoNuevo} creado con éxito`, 'success');
         if (this.tipoNuevo === 'Pais') this.cargarPaises();
         else if (this.tipoNuevo === 'Departamento') this.seleccionarPais(this.paisSeleccionado!);
         else if (this.tipoNuevo === 'Ciudad') this.seleccionarDepto(this.deptoSeleccionado!);
@@ -85,41 +95,62 @@ export class MantenimientoGeografiaComponent implements OnInit {
     else if (this.tipoNuevo === 'Ciudad' && this.deptoSeleccionado) this.geoService.crearCiudad(nombreLimpio, this.deptoSeleccionado.departamentoId).subscribe(postObserver);
   }
 
-  // --- BORRADO CON LÓGICA DE CASCADA ---
+  // --- BORRADO CON SWAL2 (REEMPLAZA EL CONFIRM) ---
   borrarPais(p: Pais) {
-    const confirmacion = confirm(`¿Estás seguro de eliminar el país "${p.nombre}"? ATENCIÓN: Se borrarán todos los departamentos y ciudades vinculados.`);
-    if (confirmacion) {
-      this.geoService.borrarPais(p.paisId).subscribe({
-        next: () => {
+    Swal.fire({
+      title: `¿Eliminar ${p.nombre}?`,
+      text: "Se borrarán todos los departamentos y ciudades vinculados.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, borrar todo'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.geoService.borrarPais(p.paisId).subscribe(() => {
           this.cargarPaises();
           this.paisSeleccionado = undefined;
           this.departamentos = [];
           this.ciudades = [];
+          Swal.fire('Eliminado', 'El país ha sido borrado.', 'success');
           this.cdr.detectChanges();
-        },
-        error: (err) => alert("Error: No se pudo borrar en cascada. Verifique la configuración del servidor.")
-      });
-    }
+        });
+      }
+    });
   }
 
   borrarDepto(d: Departamento) {
-    const confirmacion = confirm(`¿Eliminar el departamento "${d.nombre}"? También se borrarán sus ciudades.`);
-    if (confirmacion) {
-      this.geoService.borrarDepto(d.departamentoId).subscribe(() => {
-        if (this.paisSeleccionado) this.seleccionarPais(this.paisSeleccionado);
-        this.deptoSeleccionado = undefined;
-        this.ciudades = [];
-        this.cdr.detectChanges();
-      });
-    }
+    Swal.fire({
+      title: `¿Eliminar ${d.nombre}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.geoService.borrarDepto(d.departamentoId).subscribe(() => {
+          if (this.paisSeleccionado) this.seleccionarPais(this.paisSeleccionado);
+          this.deptoSeleccionado = undefined;
+          this.ciudades = [];
+          Swal.fire('Eliminado', 'Departamento borrado.', 'success');
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 
   borrarCiudad(c: Ciudad) {
-    if (confirm(`¿Eliminar la ciudad "${c.nombre}"?`)) {
-      this.geoService.borrarCiudad(c.ciudadId).subscribe(() => {
-        if (this.deptoSeleccionado) this.seleccionarDepto(this.deptoSeleccionado);
-      });
-    }
+    Swal.fire({
+      title: `¿Eliminar ${c.nombre}?`,
+      icon: 'warning',
+      showCancelButton: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.geoService.borrarCiudad(c.ciudadId).subscribe(() => {
+          if (this.deptoSeleccionado) this.seleccionarDepto(this.deptoSeleccionado);
+          Swal.fire('Eliminado', 'Ciudad borrada.', 'success');
+        });
+      }
+    });
   }
 
   abrirModal(tipo: 'Pais' | 'Departamento' | 'Ciudad') {
