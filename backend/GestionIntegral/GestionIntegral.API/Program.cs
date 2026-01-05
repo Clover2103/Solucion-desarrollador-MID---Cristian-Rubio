@@ -23,7 +23,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowAngular");
+app.UseRouting(); // Agrega esto explícitamente si persiste el error
+app.UseCors("AllowAngular"); // Debe estar antes de Authorization
 app.UseAuthorization();
 app.MapControllers();
 

@@ -11,8 +11,10 @@ namespace GestionIntegral.API.Models
         [StringLength(100)]
         public string Nombre { get; set; } = string.Empty;
 
-        // Foreign Key
         [Required]
         public int DepartamentoId { get; set; }
+
+        // Propiedad de navegación hacia el Padre (Departamento)
+        public Departamento? Departamento { get; set; }
     }
 }

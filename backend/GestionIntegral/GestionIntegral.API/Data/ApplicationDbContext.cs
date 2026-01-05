@@ -20,14 +20,14 @@ namespace GestionIntegral.API.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración de Cascada: Departamento -> Ciudad
+            // Configuración Cascada: Departamento -> Ciudad
             modelBuilder.Entity<Departamento>()
                 .HasMany(d => d.Ciudades)
                 .WithOne(c => c.Departamento)
                 .HasForeignKey(c => c.DepartamentoId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configuración de Cascada: Pais -> Departamento
+            // Configuración Cascada: Pais -> Departamento
             modelBuilder.Entity<Pais>()
                 .HasMany(p => p.Departamentos)
                 .WithOne(d => d.Pais)

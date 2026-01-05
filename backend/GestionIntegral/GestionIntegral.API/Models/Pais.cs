@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace GestionIntegral.API.Models
 {
@@ -10,5 +11,8 @@ namespace GestionIntegral.API.Models
         [Required]
         [StringLength(100)]
         public string Nombre { get; set; } = string.Empty;
+
+        // Propiedad de navegación para la relación con Departamentos
+        public ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
     }
 }
