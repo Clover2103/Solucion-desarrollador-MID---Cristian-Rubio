@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+/* Personalización de los botones de SweetAlert2 */
+.swal2-confirm {
+  background-color: #8B0000 !important; /* Rojo BEXT */
+  box-shadow: none !important;
+}
+
+.swal2-cancel {
+  background-color: #6c757d !important;
+}

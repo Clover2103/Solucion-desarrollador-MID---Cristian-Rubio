@@ -5,34 +5,41 @@ using GestionIntegral.API.Models;
 
 namespace GestionIntegral.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Paises")]
     [ApiController]
     public class PaisesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         public PaisesController(ApplicationDbContext context) => _context = context;
 
-        [HttpGet] // READ
-        public async Task<ActionResult<IEnumerable<Pais>>> GetPaises() => await _context.Paises.ToListAsync();
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Pais>>> GetPaises()
+            => await _context.Paises.ToListAsync();
 
-        [HttpPost] // CREATE
+        [HttpPost]
         public async Task<ActionResult<Pais>> PostPais(Pais pais)
         {
             _context.Paises.Add(pais);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPaises), new { id = pais.PaisId }, pais);
+            return Ok(pais);
         }
 
-        [HttpPut("{id}")] // UPDATE
+        [HttpPut("{id}")]
         public async Task<IActionResult> PutPais(int id, Pais pais)
         {
-            if (id != pais.PaisId) return BadRequest();
-            _context.Entry(pais).State = EntityState.Modified;
+            if (pais.PaisId == 0) pais.PaisId = id;
+            if (id != pais.PaisId) return BadRequest("IDs no coinciden");
+
+            var paisDb = await _context.Paises.FindAsync(id);
+            if (paisDb == null) return NotFound();
+
+            paisDb.Nombre = pais.Nombre;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        [HttpDelete("{id}")] // DELETE
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePais(int id)
         {
             var pais = await _context.Paises.FindAsync(id);

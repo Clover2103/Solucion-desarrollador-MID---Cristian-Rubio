@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace GestionIntegral.API.Models
 {
@@ -15,10 +15,10 @@ namespace GestionIntegral.API.Models
         [Required]
         public int PaisId { get; set; }
 
-        // Propiedad de navegación hacia el Padre (Pais)
+        [JsonIgnore]
         public Pais? Pais { get; set; }
 
-        // Propiedad de navegación hacia los Hijos (Ciudades)
+        [JsonIgnore]
         public ICollection<Ciudad> Ciudades { get; set; } = new List<Ciudad>();
     }
 }

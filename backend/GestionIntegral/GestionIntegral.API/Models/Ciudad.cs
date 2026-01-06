@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace GestionIntegral.API.Models
 {
@@ -14,7 +15,7 @@ namespace GestionIntegral.API.Models
         [Required]
         public int DepartamentoId { get; set; }
 
-        // Propiedad de navegación hacia el Padre (Departamento)
+        [JsonIgnore]
         public Departamento? Departamento { get; set; }
     }
 }

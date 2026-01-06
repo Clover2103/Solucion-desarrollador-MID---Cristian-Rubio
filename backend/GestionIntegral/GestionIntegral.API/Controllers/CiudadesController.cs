@@ -5,20 +5,21 @@ using GestionIntegral.API.Models;
 
 namespace GestionIntegral.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Ciudades")]
     [ApiController]
     public class CiudadesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         public CiudadesController(ApplicationDbContext context) => _context = context;
 
-        [HttpGet("pordepartamento/{deptoId}")] // READ (Filtrado)
-        public async Task<ActionResult<IEnumerable<Ciudad>>> GetPorDepto(int deptoId) 
+        [HttpGet("pordepartamento/{deptoId}")]
+        public async Task<ActionResult<IEnumerable<Ciudad>>> GetPorDepto(int deptoId)
             => await _context.Ciudades.Where(c => c.DepartamentoId == deptoId).ToListAsync();
 
-        [HttpPost] // CREATE
+        [HttpPost]
         public async Task<ActionResult<Ciudad>> PostCiudad(Ciudad ciudad)
         {
+            ciudad.Departamento = null;
             _context.Ciudades.Add(ciudad);
             await _context.SaveChangesAsync();
             return Ok(ciudad);
@@ -27,13 +28,20 @@ namespace GestionIntegral.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCiudad(int id, Ciudad ciudad)
         {
-            if (id != ciudad.CiudadId) return BadRequest();
-            _context.Entry(ciudad).State = EntityState.Modified;
+            if (ciudad.CiudadId == 0) ciudad.CiudadId = id;
+            if (id != ciudad.CiudadId) return BadRequest("IDs no coinciden");
+
+            var ciudadDb = await _context.Ciudades.FindAsync(id);
+            if (ciudadDb == null) return NotFound();
+
+            ciudadDb.Nombre = ciudad.Nombre;
+            ciudadDb.DepartamentoId = ciudad.DepartamentoId;
+
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        [HttpDelete("{id}")] // DELETE
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCiudad(int id)
         {
             var ciudad = await _context.Ciudades.FindAsync(id);

@@ -1,14 +1,16 @@
-<div class="p-3 mb-3 d-flex justify-content-between text-bg-primary">
-  <div  class="d-flex">
-    <img src="gestion-logo.png" class="img-navbar" />
-    <h4 class="mb-0 ms-4">Geografía Manager v1.0</h4>
+<div class="p-3 mb-3 d-flex justify-content-between text-bg-primary shadow-sm">
+  <div class="d-flex align-items-center">
+    <img src="gestion-logo.png" class="img-navbar" style="height: 40px;" />
+    <h4 class="mb-0 ms-4 fw-light">Geografía Manager <span class="fw-bold">v1.1</span></h4>
   </div>
-  <button (click)="cerrarSesion()" class="btn btn-danger btn-sm">
+  <button (click)="cerrarSesion()" class="btn btn-outline-light btn-sm px-3">
     Cerrar Sesión
   </button>
 </div>
+
 <div class="container-fluid py-4 bg-light min-vh-100">
   <div class="row g-4">
+
     <div class="col-md-4">
       <div class="card shadow border-0 h-100">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
@@ -16,13 +18,15 @@
           <button class="btn btn-sm btn-light rounded-circle shadow-sm fw-bold" (click)="abrirModal('Pais')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
-          <div *ngFor="let p of paises" class="d-flex border-bottom align-items-stretch">
+          <div *ngFor="let p of paises" class="d-flex border-bottom align-items-center pe-2"
+               [class.bg-primary-subtle]="paisSeleccionado?.paisId === p.paisId">
             <button type="button" (click)="seleccionarPais(p)"
                     class="btn btn-flat text-start flex-grow-1 p-3 border-0 rounded-0"
-                    [class.bg-primary-subtle]="paisSeleccionado?.paisId === p.paisId">
+                    [ngClass]="{'fw-bold text-primary': paisSeleccionado?.paisId === p.paisId}">
               {{ p.nombre }}
             </button>
-            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarPais(p)">×</button>
+            <button class="btn btn-sm btn-outline-warning border-0 me-1" (click)="abrirModal('Pais', p)">✎</button>
+            <button class="btn btn-sm btn-outline-danger border-0" (click)="borrarPais(p)">×</button>
           </div>
         </div>
       </div>
@@ -35,13 +39,15 @@
           <button class="btn btn-sm btn-light rounded-circle shadow-sm" [disabled]="!paisSeleccionado" (click)="abrirModal('Departamento')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
-          <div *ngFor="let d of departamentos" class="d-flex border-bottom align-items-stretch">
+          <div *ngFor="let d of departamentos" class="d-flex border-bottom align-items-center pe-2"
+               [class.bg-success-subtle]="deptoSeleccionado?.departamentoId === d.departamentoId">
             <button type="button" (click)="seleccionarDepto(d)"
                     class="btn btn-flat text-start flex-grow-1 p-3 border-0 rounded-0"
-                    [class.bg-success-subtle]="deptoSeleccionado?.departamentoId === d.departamentoId">
+                    [ngClass]="{'fw-bold text-success': deptoSeleccionado?.departamentoId === d.departamentoId}">
               {{ d.nombre }}
             </button>
-            <button class="btn btn-link text-danger px-3 border-0 rounded-0" (click)="borrarDepto(d)">×</button>
+            <button class="btn btn-sm btn-outline-warning border-0 me-1" (click)="abrirModal('Departamento', d)">✎</button>
+            <button class="btn btn-sm btn-outline-danger border-0" (click)="borrarDepto(d)">×</button>
           </div>
         </div>
       </div>
@@ -54,9 +60,10 @@
           <button class="btn btn-sm btn-dark rounded-circle shadow-sm" [disabled]="!deptoSeleccionado" (click)="abrirModal('Ciudad')">+</button>
         </div>
         <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
-          <div *ngFor="let c of ciudades" class="d-flex border-bottom align-items-stretch p-3">
-            <span class="flex-grow-1">{{ c.nombre }}</span>
-            <button class="btn btn-link text-danger p-0 border-0" (click)="borrarCiudad(c)">×</button>
+          <div *ngFor="let c of ciudades" class="d-flex border-bottom align-items-center p-2">
+            <span class="flex-grow-1 ps-2">{{ c.nombre }}</span>
+            <button class="btn btn-sm btn-outline-warning border-0 me-1" (click)="abrirModal('Ciudad', c)">✎</button>
+            <button class="btn btn-sm btn-outline-danger border-0" (click)="borrarCiudad(c)">×</button>
           </div>
         </div>
       </div>
@@ -68,15 +75,25 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content shadow-lg border-0">
       <div class="modal-header border-0 bg-light p-4">
-        <h5 class="modal-title fw-bold">Nuevo {{ tipoNuevo }}</h5>
+        <h5 class="modal-title fw-bold">
+          {{ isEditando ? 'Actualizar' : 'Nuevo' }} {{ tipoNuevo }}
+        </h5>
         <button type="button" class="btn-close" (click)="cerrarModal()"></button>
       </div>
       <div class="modal-body p-4">
-        <input type="text" class="form-control form-control-lg border-2" [(ngModel)]="nombreNuevo" (keyup.enter)="guardar()" placeholder="Nombre..." autofocus>
+        <label class="small fw-bold text-muted mb-2">NOMBRE DEL {{ tipoNuevo | uppercase }}</label>
+        <input type="text" class="form-control form-control-lg border-2"
+               [(ngModel)]="nombreNuevo"
+               (keyup.enter)="guardar()"
+               placeholder="Escriba el nombre aquí..." autofocus>
       </div>
       <div class="modal-footer border-0 p-4">
         <button class="btn btn-light px-4 fw-bold" (click)="cerrarModal()">CANCELAR</button>
-        <button class="btn btn-primary px-5 fw-bold shadow" [disabled]="!nombreNuevo.trim()" (click)="guardar()">GUARDAR</button>
+        <button class="btn btn-primary px-5 fw-bold shadow"
+                [disabled]="!nombreNuevo.trim()"
+                (click)="guardar()">
+          {{ isEditando ? 'ACTUALIZAR' : 'GUARDAR' }}
+        </button>
       </div>
     </div>
   </div>
