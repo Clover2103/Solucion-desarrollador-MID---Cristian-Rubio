@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class GeografiaService {
   private http = inject(HttpClient);
-  // Asegúrate de que este puerto coincida con el de tu Backend en Visual Studio
   private url = 'http://localhost:5000/api';
 
   // ==========================================
@@ -21,7 +20,6 @@ export class GeografiaService {
   }
 
   actualizarPais(id: number, nombre: string): Observable<any> {
-    // Enviamos el objeto plano para que coincida con el modelo de C#
     return this.http.put(`${this.url}/Paises/${id}`, {
       paisId: id,
       nombre: nombre
@@ -41,7 +39,6 @@ export class GeografiaService {
   }
 
   crearDepto(nombre: string, paisId: number): Observable<any> {
-    // Al crear, enviamos nombre y el ID del padre
     return this.http.post(`${this.url}/Departamentos`, {
       nombre: nombre,
       paisId: paisId
@@ -49,15 +46,11 @@ export class GeografiaService {
   }
 
   actualizarDepto(id: number, nombre: string, paisId: number) {
-    // Construimos el objeto EXACTAMENTE como lo espera la clase C#
     const body = {
       departamentoId: id,
       nombre: nombre,
       paisId: paisId
     };
-
-    // Imprime en consola para verificar que el ID no sea undefined antes de enviar
-    console.log("Enviando PUT a:", `${this.url}/Departamentos/${id}`, body);
 
     return this.http.put(`${this.url}/Departamentos/${id}`, body);
   }

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,12 +16,12 @@ export class LoginComponent {
   user: string = '';
   pass: string = '';
   loading: boolean = false;
-  error: boolean = false; // <-- Agregada para evitar el error de compilación
+  error: boolean = false;
 
   constructor(private authService: AuthService, private router: Router) { }
 
   onLogin() {
-    // 1. Validación básica de campos vacíos
+    // Validación básica de campos vacíos
     if (!this.user || !this.pass) {
       Swal.fire({
         icon: 'warning',
@@ -33,7 +33,7 @@ export class LoginComponent {
     }
 
     this.loading = true;
-    this.error = false; // Reiniciamos el estado de error al intentar loguear
+    this.error = false;
 
     this.authService.login(this.user, this.pass).subscribe({
       next: (res) => {
@@ -46,13 +46,12 @@ export class LoginComponent {
           showConfirmButton: false,
           timer: 1500
         }).then(() => {
-          // Navegación segura después de la alerta
           this.router.navigate(['/mantenimiento-geografia']);
         });
       },
       error: (err) => {
         this.loading = false;
-        this.error = true; // <-- Ahora el HTML podrá leer esta propiedad sin errores
+        this.error = true;
 
         Swal.fire({
           icon: 'error',

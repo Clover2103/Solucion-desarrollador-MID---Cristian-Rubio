@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GestionIntegral.API.Controllers
 {
-    [Route("api/[controller]")] // Esto crea la ruta /api/auth
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {

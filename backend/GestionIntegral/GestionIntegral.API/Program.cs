@@ -5,7 +5,7 @@ using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. CONFIGURACIÓN DE CONTROLADORES (NewtonsoftJson es la clave)
+// 1. CONFIGURACIÓN DE CONTROLADORES
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options => {
         // Evita errores por referencias circulares (Padre -> Hijo -> Padre)

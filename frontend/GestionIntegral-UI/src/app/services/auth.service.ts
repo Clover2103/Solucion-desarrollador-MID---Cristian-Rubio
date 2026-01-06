@@ -7,7 +7,6 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  // Asegúrate de que este puerto coincida con el de tu API de .NET
   private apiUrl = 'http://localhost:5000/api/auth';
 
   constructor(private http: HttpClient, private router: Router) { }
@@ -15,7 +14,7 @@ export class AuthService {
   login(usuario: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { usuario, password }).pipe(
       tap((res: any) => {
-        localStorage.setItem('token', res.token); // Si esto no se ejecuta, el Guard te bloquea
+        localStorage.setItem('token', res.token);
       })
     );
   }

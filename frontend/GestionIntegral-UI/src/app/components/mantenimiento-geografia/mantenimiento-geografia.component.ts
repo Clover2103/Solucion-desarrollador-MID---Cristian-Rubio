@@ -2,8 +2,8 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { GeografiaService } from '../../services/geografia.service';
 import { AuthService } from '../../services/auth.service';
+import { GeografiaService } from '../../services/geografia.service';
 import { Pais, Departamento, Ciudad } from '../../models/geografia.model';
 import Swal from 'sweetalert2';
 
@@ -44,7 +44,6 @@ export class MantenimientoGeografiaComponent implements OnInit {
     this.cargarPaises();
   }
 
-  // --- SESIÓN ---
   cerrarSesion() {
     Swal.fire({
       title: '¿Cerrar sesión?',
@@ -62,7 +61,6 @@ export class MantenimientoGeografiaComponent implements OnInit {
     });
   }
 
-  // --- CARGA DE DATOS ---
   cargarPaises() {
     this.geoService.getPaises().subscribe({
       next: (res) => {
@@ -208,7 +206,7 @@ export class MantenimientoGeografiaComponent implements OnInit {
     });
   }
 
-  // --- MODALES (CORREGIDO) ---
+  // --- MODALES ---
   abrirModal(tipo: 'Pais' | 'Departamento' | 'Ciudad', item?: any) {
     this.tipoNuevo = tipo;
     this.mostrarModal = true;
@@ -218,7 +216,6 @@ export class MantenimientoGeografiaComponent implements OnInit {
       this.isEditando = true;
       this.nombreNuevo = item.nombre;
 
-      // Lógica de asignación de ID explícita para evitar confusiones
       if (tipo === 'Pais') this.idEdicion = item.paisId;
       if (tipo === 'Departamento') this.idEdicion = item.departamentoId;
       if (tipo === 'Ciudad') this.idEdicion = item.ciudadId;
